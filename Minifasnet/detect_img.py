@@ -255,8 +255,7 @@ label = np.argmax(
 )
 
 
-# Official repository:
-#
+
 # label == 1 -> Real
 # otherwise  -> Fake/Spoof
 
