@@ -27,8 +27,8 @@ MODEL_MAPPING = {
 
 class Detection:
     def __init__(self):
-        caffemodel = r"D:\Face_anti_spoofing\models\Widerface-RetinaFace.caffemodel"
-        deploy = r"D:\Face_anti_spoofing\models\deploy.prototxt"
+        caffemodel = r"D:\MinifasnetV1\models\Widerface-RetinaFace.caffemodel"
+        deploy = r"D:\MinifasnetV1\models\deploy.prototxt"
         self.detector = cv2.dnn.readNetFromCaffe(deploy, caffemodel)
         self.detector_confidence = 0.6
 

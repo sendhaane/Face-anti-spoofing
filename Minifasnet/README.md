@@ -1,14 +1,12 @@
 # Face Anti-Spoofing using MiniFASNetV2
 
-A lightweight face anti-spoofing system using **WiderFace-RetinaFace** for face detection and **MiniFASNetV2** for detecting whether a detected face is real or a spoof/attack.
+A lightweight face anti-spoofing system using **WiderFace-RetinaFace** for face detection and **MiniFASNetV2** for detecting whether a detected face is **real or spoof/attack**.
 
 The implementation follows the preprocessing and face-cropping logic used by the original MiniFASNet inference pipeline.
 
 ---
 
 ## Overview
-
-The system takes an image or webcam frame and performs the following steps:
 
 ```text
 RGB Camera / Image
@@ -33,12 +31,9 @@ MiniFASNetV2
         ▼
 3-Class Softmax Output
         │
-        ▼
-Class 0 ──┐
-           ├── SPOOF
-Class 2 ──┘
-
-Class 1 ───── REAL
+        ├── Class 0 → SPOOF
+        ├── Class 1 → REAL
+        └── Class 2 → SPOOF
 ```
 
 ---
@@ -56,13 +51,16 @@ Class 1 ───── REAL
 * Class probability display
 * Cropped face saving
 * Result image saving
-* Real-time webcam inference support
+* Real-time webcam inference
+* FP32, FP16 and INT8 TFLite models
+* INT8 image inference
+* INT8 real-time webcam inference
 
 ---
 
-## Models Used
+# Models Used
 
-### 1. Face Detection Model
+## 1. Face Detection Model
 
 The project uses:
 
@@ -71,9 +69,9 @@ Widerface-RetinaFace.caffemodel
 deploy.prototxt
 ```
 
-The Caffe model detects the face and produces a bounding box.
+The detector identifies faces and produces their bounding boxes.
 
-The detector confidence threshold is:
+Detection confidence threshold:
 
 ```text
 0.6
@@ -81,22 +79,22 @@ The detector confidence threshold is:
 
 ---
 
-### 2. Anti-Spoofing Model
+## 2. Anti-Spoofing Model
 
-The project uses:
+The original model is:
 
 ```text
 2.7_80x80_MiniFASNetV2.pth
 ```
 
-The filename provides important information:
+The filename indicates:
 
 ```text
 2.7_80x80_MiniFASNetV2.pth
-│ │    │     │
-│ │    │     └── Model architecture
-│ │    └──────── Input resolution
-│ └───────────── Crop scale
+│ │    │      │
+│ │    │      └── Model architecture
+│ │    └───────── Input resolution
+│ └────────────── Crop scale
 ```
 
 Therefore:
@@ -109,7 +107,7 @@ Architecture = MiniFASNetV2
 
 ---
 
-## Model Classes
+# Model Classes
 
 MiniFASNetV2 produces three output classes:
 
@@ -119,7 +117,7 @@ MiniFASNetV2 produces three output classes:
 | 1     | Real / Live    |
 | 2     | Spoof / Attack |
 
-The application converts these three classes into a binary decision:
+The application converts the three classes into a binary decision:
 
 ```text
 Class 1 → REAL
@@ -128,15 +126,15 @@ Class 0 → SPOOF
 Class 2 → SPOOF
 ```
 
-The final class is selected using the maximum softmax probability.
+The predicted class is selected using the highest softmax probability.
 
 ---
 
-## Preprocessing
+# Preprocessing
 
-The implementation intentionally follows the preprocessing used by the supplied MiniFASNet source.
+The implementation follows the preprocessing used by the supplied MiniFASNet inference pipeline.
 
-### Input resolution
+## Input Resolution
 
 The detected face is cropped and resized to:
 
@@ -144,7 +142,7 @@ The detected face is cropped and resized to:
 80 × 80 × 3
 ```
 
-### Channel order
+## Channel Order
 
 The OpenCV image is kept in:
 
@@ -154,21 +152,19 @@ BGR
 
 No BGR-to-RGB conversion is performed.
 
-### Pixel scaling
+## Pixel Scaling
 
-The pixel values are converted to `float32`.
+The image is converted to `float32`.
 
-The implementation does **not** divide the input by 255.
+The original PyTorch pipeline does not divide the input by 255.
 
-Therefore the model receives approximately:
+Therefore:
 
 ```text
-0 – 255
+Pixel range ≈ 0–255
 ```
 
-pixel values.
-
-### Tensor layout
+## Tensor Layout
 
 The image is converted from:
 
@@ -182,33 +178,32 @@ to:
 C × H × W
 ```
 
-before being passed to PyTorch.
+before PyTorch inference.
 
 ---
 
-## Face Cropping
+# Face Cropping
 
-After face detection, the detected bounding box is expanded using the model's scale value:
+After face detection, the bounding box is expanded using:
 
 ```text
 scale = 2.7
 ```
 
-The crop is generated using the `CropImage` implementation.
-
-The crop:
+The crop process:
 
 1. Takes the detected bounding box.
 2. Calculates its center.
 3. Expands the bounding box by the scale factor.
-4. Keeps the crop inside the original image boundaries.
-5. Resizes the resulting region to 80×80.
+4. Keeps the crop within the image boundaries.
+5. Resizes the crop to 80×80.
+6. Passes the cropped face to MiniFASNetV2.
 
-This crop is then passed to MiniFASNetV2.
+---
 
-## Image Inference
+# Image Inference
 
-The image inference pipeline is:
+The original PyTorch inference pipeline is:
 
 ```text
 Input Image
@@ -259,7 +254,7 @@ result/
 
 ---
 
-## Output
+# Output
 
 The result image contains:
 
@@ -283,9 +278,261 @@ Confidence: 81.0%
 
 ---
 
-## Webcam Inference
+# Model Conversion and Quantization
 
-The same pipeline can be applied to a live camera:
+To enable lightweight deployment, the MiniFASNetV2 model was converted from **PyTorch → ONNX → TensorFlow SavedModel → TensorFlow Lite**.
+
+```text
+MiniFASNetV2 PyTorch
+        │
+        ▼
+       ONNX
+        │
+        ▼
+TensorFlow SavedModel
+        │
+        ├──────────► FP32 TFLite
+        │
+        ├──────────► FP16 TFLite
+        │
+        └──────────► INT8 TFLite
+```
+
+## ONNX to TensorFlow
+
+The ONNX model:
+
+```text
+2.7_80x80_MiniFASNetV2.onnx
+```
+
+was converted using **ONNX2TF**.
+
+The conversion produced a TensorFlow SavedModel:
+
+```text
+tensorflow/
+├── saved_model.pb
+├── fingerprint.pb
+├── assets/
+└── variables/
+```
+
+The conversion was performed in a separate environment to avoid dependency conflicts.
+
+---
+
+# TFLite Models
+
+Three TFLite versions were generated:
+
+```text
+2.7_80x80_MiniFASNetV2_float32.tflite
+2.7_80x80_MiniFASNetV2_float16.tflite
+2.7_80x80_MiniFASNetV2_int8.tflite
+```
+
+Approximate sizes:
+
+| Model |    Size |
+| ----- | ------: |
+| FP32  | 1.68 MB |
+| FP16  | 0.89 MB |
+| INT8  | 0.59 MB |
+
+---
+
+# INT8 Quantization
+
+The INT8 model uses **full integer quantization**.
+
+A representative dataset containing:
+
+```text
+300 calibration images
+```
+
+was used to determine the quantization parameters.
+
+The conversion process is:
+
+```text
+TensorFlow SavedModel
+        │
+        ▼
+300 Calibration Images
+        │
+        ▼
+Representative Dataset
+        │
+        ▼
+INT8 Quantization
+        │
+        ▼
+Fully INT8 TFLite Model
+```
+
+The resulting model uses:
+
+```text
+Input  : INT8
+Output : INT8
+```
+
+Model size:
+
+```text
+605.27 KB
+```
+
+---
+
+# INT8 Model Information
+
+```text
+Input Shape:
+[1, 80, 80, 3]
+
+Input Type:
+INT8
+
+Input Scale:
+1.0
+
+Input Zero Point:
+-128
+```
+
+Output:
+
+```text
+Output Shape:
+[1, 3]
+
+Output Type:
+INT8
+
+Output Scale:
+0.0613038689
+
+Output Zero Point:
+-11
+```
+
+The INT8 output is dequantized before calculating the final probabilities.
+
+---
+
+# INT8 Validation
+
+The INT8 model was compared against the FP32 TFLite model.
+
+Example:
+
+```text
+FP32 output:
+[-2.53985, 4.14237, -1.60531]
+
+INT8 dequantized output:
+[-2.63607, 4.29127, -1.65520]
+```
+
+The numerical values changed slightly because of quantization.
+
+However, the prediction remained the same:
+
+```text
+FP32 predicted class : 1
+INT8 predicted class : 1
+
+Prediction match: PASS
+```
+
+This confirms that the tested INT8 model preserved the predicted class for the validation image.
+
+---
+
+# INT8 Image Inference
+
+The INT8 model can be used directly for image inference.
+
+Run:
+
+```bash
+python detect_img_int8.py
+```
+
+The process is:
+
+```text
+Input Image
+     │
+     ▼
+Face Detection
+     │
+     ▼
+2.7× Face Crop
+     │
+     ▼
+80×80 Preprocessing
+     │
+     ▼
+INT8 Quantization
+     │
+     ▼
+MiniFASNetV2 INT8 TFLite
+     │
+     ▼
+INT8 Output
+     │
+     ▼
+Dequantization
+     │
+     ▼
+REAL / SPOOF
+```
+
+The processed result is saved in:
+
+```text
+result/
+```
+
+The result filename uses the original image name with:
+
+```text
+_int8
+```
+
+Example:
+
+```text
+input:
+person.jpg
+
+output:
+result/person_int8.jpg
+```
+
+---
+
+# Real-Time Webcam Inference
+
+The same anti-spoofing pipeline can be used with a webcam.
+
+Run:
+
+```bash
+python detect_webcam.py
+```
+
+For INT8 inference:
+
+```bash
+python webcam_int8.py
+```
+
+Pipeline:
 
 ```text
 Webcam Frame
@@ -303,16 +550,13 @@ Face Bounding Box
 80×80
      │
      ▼
-MiniFASNetV2
+INT8 Preprocessing
+     │
+     ▼
+MiniFASNetV2 INT8
      │
      ▼
 REAL / SPOOF
-```
-
-Run:
-
-```bash
-python detect_webcam.py
 ```
 
 Press:
@@ -323,7 +567,48 @@ Q
 
 to exit.
 
-## Summary
+---
+---
+
+# Complete Pipeline
+
+The complete system is:
+
+```text
+                 IMAGE / WEBCAM
+                       │
+                       ▼
+             WiderFace-RetinaFace
+                       │
+                       ▼
+                 Face Detection
+                       │
+                       ▼
+                 2.7× Face Crop
+                       │
+                       ▼
+                    80×80
+                       │
+              ┌────────┴────────┐
+              │                 │
+              ▼                 ▼
+        PyTorch Model      INT8 TFLite
+              │                 │
+              ▼                 ▼
+        MiniFASNetV2      MiniFASNetV2
+              │                 │
+              ▼                 ▼
+          3 Classes          3 Classes
+              │                 │
+              └────────┬────────┘
+                       ▼
+              Class 1 → REAL
+              Class 0/2 → SPOOF
+```
+
+---
+
+# Summary
 
 This project implements a lightweight face anti-spoofing pipeline using:
 
@@ -333,29 +618,51 @@ WiderFace-RetinaFace
 MiniFASNetV2
 ```
 
-The complete pipeline is:
+The model has been successfully converted and optimized through:
 
 ```text
-Camera/Image
-     ↓
-Face Detection
-     ↓
-Face Bounding Box
-     ↓
-Official 2.7× Crop
-     ↓
-80×80 Resize
-     ↓
-BGR → CHW
-     ↓
-Float32 (0–255)
-     ↓
-MiniFASNetV2
-     ↓
-3-Class Softmax
-     ↓
-Class 1 → REAL
-Class 0/2 → SPOOF
+PyTorch
+   ↓
+ONNX
+   ↓
+TensorFlow SavedModel
+   ↓
+FP32 TFLite
+   ↓
+FP16 TFLite
+   ↓
+Fully INT8 TFLite
 ```
 
-The implementation is designed as a starting point for moving the anti-spoofing model toward **optimized real-time and embedded inference**.
+
+The INT8 model uses **300 calibration images**, has an approximate size of **605 KB**, and supports both **image inference and real-time webcam inference**.
+
+# Dataset & References
+
+## Dataset
+
+The project uses the **CelebA-Spoof for Face Anti-Spoofing** dataset and **Anti-Spoofing Computer vision dataset.** .
+
+**Dataset source:**
+[CelebA-Spoof for Face Anti-Spoofing — Kaggle](https://www.kaggle.com/datasets/attentionlayer241/celeba-spoof-for-face-antispoofing?utm_source=chatgpt.com)
+[Anti-Spoofing Computer vision dataset — Roboflow](https://universe.roboflow.com/keyrus/anti-spoofing-gyy4l)
+
+The dataset is used for developing and evaluating face anti-spoofing models.
+
+---
+
+## Reference Repository
+
+The implementation refers to the **Silent-Face-Anti-Spoofing** project by MiniVision AI.
+
+**Reference repository:**
+[MiniVision AI — Silent-Face-Anti-Spoofing](https://github.com/minivision-ai/Silent-Face-Anti-Spoofing?utm_source=chatgpt.com)
+
+**Reference README:**
+[Silent-Face-Anti-Spoofing — README_EN.md](https://github.com/minivision-ai/Silent-Face-Anti-Spoofing/blob/master/README_EN.md?utm_source=chatgpt.com)
+
+The reference project was used for understanding the MiniFASNetV2 model, preprocessing, face-cropping logic, and inference pipeline.
+
+---
+
+The project is now suitable for further **real-time performance testing, CPU benchmarking, and embedded/NPU deployment experiments**.
