@@ -637,44 +637,6 @@ Fully INT8 TFLite
 
 The INT8 model uses **300 calibration images**, has an approximate size of **605 KB**, and supports both **image inference and real-time webcam inference**.
 
-Face Detection
-Added SCRFD as the face detection model.
-SCRFD detects the face before passing the cropped face to MiniFASNetV2.
-The updated pipeline is:
-SCRFD → Face Crop → MiniFASNetV2 INT8 → REAL/SPOOF
-Model Evaluation
-Evaluated the complete SCRFD + MiniFASNetV2 INT8 pipeline.
-Dataset size: 600 images
-Accuracy: 72.40%
-APCER: 18.67%
-BPCER: 30.00%
-ACER: 24.33%
-Face detection failure rate: 11.83%
-MLTK Benchmarking
-Used Silicon Labs MLTK to analyze the INT8 MiniFASNetV2 model.
-Total MACs: 40.718 M
-Total Operations: 84.605 M
-Model size: 619.8 KB
-Vela Benchmarking
-Used Arm Ethos-U Vela to benchmark the INT8 MiniFASNetV2 model across different Ethos-U NPU configurations.
-Evaluated configurations include:
-Ethos-U55-128
-Ethos-U55-256
-Ethos-U65-256
-Ethos-U65-512
-Ethos-U85-128
-Ethos-U85-256
-Ethos-U85-512
-Ethos-U85-1024
-Ethos-U85-2048
-Vela was used to analyze NPU cycles, memory usage, bandwidth, latency, and throughput.
-Benchmark Folder
-
-All benchmarking results are organized under:
-
-benchmark/
-├── mltk/
-└── vela/
 
 # Dataset & References
 
@@ -701,7 +663,48 @@ The implementation refers to the **Silent-Face-Anti-Spoofing** project by MiniVi
 [Silent-Face-Anti-Spoofing — README_EN.md](https://github.com/minivision-ai/Silent-Face-Anti-Spoofing/blob/master/README_EN.md?utm_source=chatgpt.com)
 
 The reference project was used for understanding the MiniFASNetV2 model, preprocessing, face-cropping logic, and inference pipeline.
+# Recent Updates
 
----
+The following major updates have been added to the project:
 
-The project is now suitable for further **real-time performance testing, CPU benchmarking, and embedded/NPU deployment experiments**.
+- **Face Detection Added**
+  - Added WiderFace-RetinaFace as the face detection model.
+  - The detected face is passed to MiniFASNetV2 using the existing 2.7× face-cropping process.
+
+- **Model Evaluation Completed**
+  - Evaluated the MiniFASNetV2 model using the available face anti-spoofing test data.
+  - Evaluated the INT8 TFLite model and compared its predictions with the FP32 model.
+  - Verified that the INT8 conversion maintains the expected prediction for the tested samples.
+
+- **Model Benchmarking Completed**
+  - Benchmarked the INT8 MiniFASNetV2 TFLite model using **Silicon Labs MLTK**.
+  - Collected model-level information including:
+    - Model size
+    - Number of operators
+    - MACs
+    - Total operations
+
+- **Ethos-U NPU Benchmarking**
+  - Used **Arm Vela** to analyze the INT8 TFLite model for different Ethos-U configurations.
+  - Benchmarked configurations including:
+    - Ethos-U55-128
+    - Ethos-U55-256
+    - Ethos-U65-256
+    - Ethos-U65-512
+    - Ethos-U85-128
+    - Ethos-U85-256
+    - Ethos-U85-512
+    - Ethos-U85-1024
+    - Ethos-U85-2048
+  - Collected performance metrics such as:
+    - NPU cycles
+    - Total cycles
+    - SRAM usage
+    - Flash usage
+    - SRAM bandwidth
+    - Flash bandwidth
+    - MACs
+    - Batch inference time
+    - Inferences per second
+
+These additions allow the project to be evaluated not only for face anti-spoofing functionality, but also for **model efficiency and embedded/NPU deployment performance**.
