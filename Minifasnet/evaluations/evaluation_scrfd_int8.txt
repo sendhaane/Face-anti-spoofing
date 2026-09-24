@@ -1,0 +1,10 @@
+============================================================
+SCRFD DETECTION COMPLETE
+============================================================
+Total images       : 605
+Processed          : 605
+Faces detected     : 534
+No face detected   : 71
+Processing errors  : 0
+Detection rate     : 88.26%
+No-face rate       : 11.74%

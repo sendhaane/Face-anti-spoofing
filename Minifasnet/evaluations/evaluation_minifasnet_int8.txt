@@ -1,0 +1,31 @@
+
+============================================================
+SCRFD INT8 + MINIFASNETV2 INT8
+EVALUATION RESULTS
+============================================================
+Total images           : 600
+Successful             : 529
+Failed                 : 71
+
+Failure Breakdown
+------------------------------------------
+Face not detected     : 71
+Invalid crop          : 0
+Image load failure    : 0
+Face detection error  : 0
+Inference error       : 0
+
+Confusion Matrix
+------------------------------------------
+True Positive (TP)  : 175
+True Negative (TN)  : 208
+False Positive (FP) : 56
+False Negative (FN) : 90
+
+Metrics
+------------------------------------------
+Accuracy              : 72.40%
+APCER                 : 18.67%
+BPCER                 : 30.00%
+ACER                  : 24.33%
+Detection failure rate: 11.83%

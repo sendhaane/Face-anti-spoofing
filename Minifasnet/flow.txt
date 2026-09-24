@@ -1,0 +1,55 @@
+                  WEBCAM
+                    │
+                    ▼
+              640 × 480 frame
+                    │
+                    ▼
+          ┌────────────────────┐
+          │    SCRFD INT8      │
+          │                    │
+          │  Backbone          │
+          │       ↓            │
+          │ Multi-scale heads  │
+          │       ↓            │
+          │ Stride 8            │
+          │ Stride 16           │
+          │ Stride 32           │
+          └─────────┬──────────┘
+                    │
+                    ▼
+             Face bounding box
+             + confidence
+                    │
+                    ▼
+          Confidence filtering
+                    │
+                    ▼
+                   NMS
+                    │
+                    ▼
+            Selected face
+                    │
+                    ▼
+        Official CropImage()
+              scale = 2.7
+                    │
+                    ▼
+              80 × 80 face
+                    │
+                    ▼
+          ┌────────────────────┐
+          │ MiniFASNetV2 INT8  │
+          └─────────┬──────────┘
+                    │
+                    ▼
+             3 class output
+                    │
+          ┌─────────┼─────────┐
+          ▼         ▼         ▼
+       Class 0   Class 1   Class 2
+       SPOOF      REAL     SPOOF
+          │         │         │
+          └────┬────┘─────────┘
+               │
+               ▼
+          REAL / SPOOF

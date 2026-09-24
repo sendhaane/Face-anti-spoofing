@@ -1,0 +1,118 @@
+============================================================
+SCRFD + MiniFASNetV2 INT8
+OVERALL PIPELINE PERFORMANCE
+============================================================
+
+Iterations           : 100
+Successful runs      : 100
+
+Face Detection Avg   : 27.493 ms
+Face Crop Avg        : 0.075 ms
+MiniFASNet Avg       : 5.509 ms
+Total Avg Latency    : 43.904 ms
+Median Latency       : 43.082 ms
+P95 Latency         : 47.994 ms
+P99 Latency         : 56.510 ms
+Throughput          : 22.78 FPS
+Median FPS          : 23.21 FPS
+
+
+
+==============================================
+Starting Overall Pipeline Benchmark
+==============================================
+Iterations: 100
+
+Warming up...
+Warm-up completed.
+
+Benchmarking...
+Iteration   1/100 | Total: 47.17 ms
+Iteration  10/100 | Total: 43.95 ms
+Iteration  20/100 | Total: 42.97 ms
+Iteration  30/100 | Total: 42.90 ms
+Iteration  40/100 | Total: 43.03 ms
+Iteration  50/100 | Total: 42.77 ms
+Iteration  60/100 | Total: 43.25 ms
+Iteration  70/100 | Total: 43.28 ms
+Iteration  80/100 | Total: 42.91 ms
+Iteration  90/100 | Total: 43.25 ms
+Iteration 100/100 | Total: 43.76 ms
+
+
+======================================================================
+OVERALL ANTI-SPOOFING PIPELINE PERFORMANCE
+======================================================================
+
+Face Detection Preprocessing
+Average : 10.596 ms
+Median  : 10.405 ms
+Min     : 9.037 ms
+Max     : 17.624 ms
+P95     : 11.881 ms
+P99     : 14.041 ms
+
+SCRFD Inference
+Average : 27.493 ms
+Median  : 27.083 ms
+Min     : 24.982 ms
+Max     : 34.019 ms
+P95     : 31.199 ms
+P99     : 33.876 ms
+
+Face Cropping
+Average : 0.075 ms
+Median  : 0.073 ms
+Min     : 0.066 ms
+Max     : 0.132 ms
+P95     : 0.088 ms
+P99     : 0.104 ms
+
+MiniFASNet Preprocessing
+Average : 0.104 ms
+Median  : 0.098 ms
+Min     : 0.090 ms
+Max     : 0.177 ms
+P95     : 0.130 ms
+P99     : 0.160 ms
+
+MiniFASNet Inference
+Average : 5.509 ms
+Median  : 5.376 ms
+Min     : 5.297 ms
+Max     : 8.545 ms
+P95     : 6.187 ms
+P99     : 6.661 ms
+
+MiniFASNet Postprocessing
+Average : 0.057 ms
+Median  : 0.052 ms
+Min     : 0.044 ms
+Max     : 0.197 ms
+P95     : 0.081 ms
+P99     : 0.114 ms
+
+TOTAL PIPELINE
+Average : 43.904 ms
+Median  : 43.082 ms
+Min     : 40.586 ms
+Max     : 58.520 ms
+P95     : 47.994 ms
+P99     : 56.510 ms
+
+
+----------------------------------------------------------------------
+THROUGHPUT
+----------------------------------------------------------------------
+Average latency : 43.904 ms
+Median latency  : 43.082 ms
+Throughput      : 22.78 FPS
+Median FPS      : 23.21 FPS
+
+
+----------------------------------------------------------------------
+PIPELINE COMPONENT CONTRIBUTION
+----------------------------------------------------------------------
+SCRFD detection : 27.493 ms (62.62%)
+Face cropping   : 0.075 ms (0.17%)
+MiniFASNet      : 5.509 ms (12.55%)
