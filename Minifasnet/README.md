@@ -637,6 +637,45 @@ Fully INT8 TFLite
 
 The INT8 model uses **300 calibration images**, has an approximate size of **605 KB**, and supports both **image inference and real-time webcam inference**.
 
+Face Detection
+Added SCRFD as the face detection model.
+SCRFD detects the face before passing the cropped face to MiniFASNetV2.
+The updated pipeline is:
+SCRFD → Face Crop → MiniFASNetV2 INT8 → REAL/SPOOF
+Model Evaluation
+Evaluated the complete SCRFD + MiniFASNetV2 INT8 pipeline.
+Dataset size: 600 images
+Accuracy: 72.40%
+APCER: 18.67%
+BPCER: 30.00%
+ACER: 24.33%
+Face detection failure rate: 11.83%
+MLTK Benchmarking
+Used Silicon Labs MLTK to analyze the INT8 MiniFASNetV2 model.
+Total MACs: 40.718 M
+Total Operations: 84.605 M
+Model size: 619.8 KB
+Vela Benchmarking
+Used Arm Ethos-U Vela to benchmark the INT8 MiniFASNetV2 model across different Ethos-U NPU configurations.
+Evaluated configurations include:
+Ethos-U55-128
+Ethos-U55-256
+Ethos-U65-256
+Ethos-U65-512
+Ethos-U85-128
+Ethos-U85-256
+Ethos-U85-512
+Ethos-U85-1024
+Ethos-U85-2048
+Vela was used to analyze NPU cycles, memory usage, bandwidth, latency, and throughput.
+Benchmark Folder
+
+All benchmarking results are organized under:
+
+benchmark/
+├── mltk/
+└── vela/
+
 # Dataset & References
 
 ## Dataset
