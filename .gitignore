@@ -1,1 +1,13 @@
 .vscode/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+
+# Datasets
+MobilenetV3/calibration_data/
+MobilenetV3/test_images_organized/
+
+YOLO2/test_images
